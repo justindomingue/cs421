@@ -1,9 +1,42 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Scanner;
 
 public class Client {
+	public static Connection con;
+	
 	public static void main(String[] args)
 	{
 		Boolean shouldContinue = true;
+		
+		// CONNECT TO POSTGRESQL JDBC
+		try { 
+			Class.forName("org.postgresql.Driver");
+		} catch (ClassNotFoundException e) {
+			System.out.println("PostgeSQL JDBC Driver not found.");
+			e.printStackTrace();
+			return;
+		}
+		
+		Connection connection = null;
+		
+		try {
+			connection = DriverManager.getConnection("jdbc:db2://db2:50000/cs421", "cs421g45", "joidpehejy");
+		} catch (SQLException e) {
+			System.out.println("Connection failed! Check output console.");
+			e.printStackTrace();
+			return;
+		}
+		
+		if (connection == null) {
+			System.out.println("Something went wrong. Aborting.");
+			return;
+		}
+		
+		// Set class object
+		con = connection;
 		
 		do {
 	    // Display menu graphics
