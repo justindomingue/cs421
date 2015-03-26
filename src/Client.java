@@ -19,25 +19,23 @@ public class Client {
 		try {
 			Class.forName("org.postgresql.Driver");
 		} catch (ClassNotFoundException e) {
-			System.out.println("PostgeSQL JDBC Driver not found.");
+			System.err.println("PostgeSQL JDBC Driver not found.");
 			e.printStackTrace();
 			return;
 		}
-		
-		System.out.println("PostgeSQL JDBC Driver found.");
-		
+				
 		Connection connection = null;
 
 		try {
-			connection = DriverManager.getConnection("jdbc:postgresql://db2:50000/cs421", "cs421g45", "joidpehejy");
+			connection = DriverManager.getConnection("jdbc:postgresql://db2/CS421", "cs421g45", "joidpehejy");
 		} catch (SQLException e) {
-			System.out.println("Connection failed! Check output console.");
+			System.err.println("Connection failed! Check output console.");
 			e.printStackTrace();
+			return;
 		}
-		System.out.println("Connection success.");
 
 		if (connection == null) {
-			System.out.println("Something went wrong. Aborting.");
+			System.err.println("Something went wrong. Aborting.");
 			return;
 		}
 
@@ -84,13 +82,14 @@ public class Client {
 			  break; // This break is not really necessary
 			}
 		} catch(SQLException e) {
-			System.out.println("SQL Exception.");
+			System.err.println("SQL Exception.");
+            e.printStackTrace();
+            
 			if (con != null) {
             try {
-                System.err.print("Transaction is being rolled back");
+                System.err.println("Transaction is being rolled back");
                 con.rollback();
             } catch(SQLException excep) {
-                System.err.print("Couldn't roll back transaction.");
             }
         }
 		} finally {
@@ -105,7 +104,9 @@ public class Client {
 
 		} while (shouldContinue);
 
-		System.out.println("Bye.");
+		con.close();
+		
+		System.out.println("Closed all connections.\nHave a good day!");
 	  }
 
 	public static void option1() throws SQLException {
@@ -113,13 +114,13 @@ public class Client {
 		System.out.println("Query: " + query);
 
 		// Create statement
-		Statement s = con.createStatement();
-		ResultSet rs = s.executeQuery(query);
+		statement = con.createStatement();
+		ResultSet rs = statement.executeQuery(query);
 		while (rs.next()) {
 			String name = rs.getString(1);
 			String title = rs.getString(2);
 			int discount = rs.getInt(3);
-			System.out.println("name: " + name + " \t title: " + title + " \tdiscount: " + discount);
+			System.out.println("name: " + name + " | title: " + title + " | discount: " + discount + '%');
 		}
 		System.out.println("DONE.");
 	}
@@ -129,12 +130,12 @@ public class Client {
 		System.out.println("Query: " + query);
 
 		// Create statement
-		Statement s = con.createStatement();
-		ResultSet rs = s.executeQuery(query);
+		statement = con.createStatement();
+		ResultSet rs = statement.executeQuery(query);
 
 		while (rs.next()) {
 			String name = rs.getString(1);
-			Integer phone = rs.getInt(2);
+			String phone = rs.getString(2);
 			String address = rs.getString(3);
 			Integer count = rs.getInt(4);
 			System.out.println("publisher: " + name + "\tphone: " + phone + "\taddress: " + address + "\tcount: " + count);
@@ -147,15 +148,16 @@ public class Client {
 	public static void option3() throws SQLException {
 		String query = "SELECT pname FROM publisher;";
 
-		// Create statement
-		Statement s = con.createStatement();
-		ResultSet rs = s.executeQuery(query);
+		// Display publisher names
+		statement = con.createStatement();
+		ResultSet rs = statement.executeQuery(query);
 		System.out.println("Publishers: ");
 		while (rs.next()) {
 			String name = rs.getString(1);
 			System.out.println(name);
 		}
 
+		// Update price
 		Scanner scanner = new Scanner(System.in);
 
 		System.out.print("Enter the publisher name: ");
@@ -169,12 +171,36 @@ public class Client {
 		prepStatement = con.prepareStatement(update);
 		prepStatement.setInt(1, amount);
 		prepStatement.setString(2, name);
+		prepStatement.executeUpdate();
 		con.commit();
 
+		con.setAutoCommit(true);
+		
+		// Show result
+		String displayResult = "SELECT title, price FROM books B WHERE B.isbn IN (SELECT P2.isbn FROM publisher P INNER JOIN publishes P2 ON P.pid = P2.pid AND P.pname = '" + name + "');";
+		statement = con.createStatement();
+		rs = statement.executeQuery(displayResult);
+		while (rs.next()) {
+			name = rs.getString(1);
+			Integer price = rs.getInt(2);
+			System.out.println("name: " + name + "\tprice: " + price);
+		}
+		
 		System.out.println("DONE.");
 	}
 
 	public static void option4() throws SQLException {
+		// Display book names
+		String query = "SELECT isbn, title FROM books;";
+		statement = con.createStatement();
+		ResultSet rs = statement.executeQuery(query);
+		System.out.println("Books: ");
+		while (rs.next()) {
+			Integer isbn = rs.getInt(1);
+			String title = rs.getString(2);
+			System.out.println("name: " + isbn + " title: " + title);
+		}
+
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("Enter the ISBN of the book to remove: ");
 		Integer isbn = scanner.nextInt();
@@ -184,19 +210,41 @@ public class Client {
 		con.setAutoCommit(false);
 		prepStatement = con.prepareStatement(remove);
 		prepStatement.setString(1, isbn.toString());
+		int n = prepStatement.executeUpdate();
 		con.commit();
-
+		statement = con.createStatement();
+		rs = statement.executeQuery(query);
+		System.out.println("\nBooks (after delete): ");
+		while (rs.next()) {
+			isbn = rs.getInt(1);
+			String title = rs.getString(2);
+			System.out.println("name: " + isbn + " title: " + title);
+		}
+		
+		System.out.println(n + " rows changed.\n");
 		System.out.println("DONE.");
 	}
 
 	public static void option5() throws SQLException {
+		String query = "SELECT pname FROM publisher;";
+
+		// Display publisher names
+		statement = con.createStatement();
+		ResultSet rs = statement.executeQuery(query);
+		System.out.println("Current publishers: ");
+		while (rs.next()) {
+			String name = rs.getString(1);
+			System.out.println(name);
+		}
+
 		Scanner scanner = new Scanner(System.in);
-		System.out.print("Enter publisher id (larger than 10): ");
+		System.out.print("\nEnter publisher id (larger than 10): ");
 		Integer id = scanner.nextInt();
 		System.out.print("Enter publisher name: ");
+		scanner.nextLine();
 		String name = scanner.nextLine();
 		System.out.print("Enter publisher phone number: ");
-		Integer phone = scanner.nextInt();
+		String phone = scanner.nextLine();
 		System.out.print("Enter publisher address: ");
 		String address = scanner.nextLine();
 
@@ -207,9 +255,19 @@ public class Client {
 
 		prepStatement.setInt(1, id);
 		prepStatement.setString(2, name);
-		prepStatement.setInt(3, phone);
+		prepStatement.setString(3, phone);
 		prepStatement.setString(4, address);
+		prepStatement.executeUpdate();
 		con.commit();
+
+		// Display publisher names
+		statement = con.createStatement();
+		rs = statement.executeQuery(query);
+		System.out.println("Publishers (after insert): ");
+		while (rs.next()) {
+			name = rs.getString(1);
+			System.out.println(name);
+		}
 
 		System.out.println("DONE.");
 	}
