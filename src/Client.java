@@ -38,10 +38,10 @@ public class Client {
 			System.err.println("Something went wrong. Aborting.");
 			return;
 		}
-
+		
 		// Set class object
 		con = connection;
-
+		
 		System.out.println("============================");
 		System.out.println("======== WELCOME! ==========");
 		System.out.println("============================\n");
@@ -55,6 +55,7 @@ public class Client {
 		System.out.println("|        4. Remove a book from the listing");
 		System.out.println("|        5. Add a new publisher.");
 		System.out.println("|        6. Exit");
+		System.out.println("|        7. Time Queries");
 		System.out.print("$ ");
 		Scanner scanner = new Scanner(System.in);
 		int choice = scanner.nextInt();
@@ -76,6 +77,9 @@ public class Client {
 				break;
 			case 5:
 				option5();
+				break;
+			case 7:
+				timeQuery();
 				break;
 			default:
 			  shouldContinue = false;
@@ -270,5 +274,46 @@ public class Client {
 		}
 
 		System.out.println("DONE.");
+	}
+	
+	public static void timeQuery() {
+		try {
+		long first = System.currentTimeMillis();
+		
+		String query = "SELECT author, COUNT(*) AS cnt FROM books GROUP BY author ORDER BY cnt DESC;";
+		System.out.println("Query 1: " + query);
+
+				statement = con.createStatement();
+				ResultSet rs = statement.executeQuery(query);
+				/* uncomment to show the result of the query */
+				/*while (rs.next()) {
+					String name = rs.getString(1);
+					String count = rs.getString(2);
+					System.out.println("name: " + name + " | count: " + count);
+				}*/
+				
+		long second = System.currentTimeMillis();
+		
+		System.out.println("Time: " + (second - first));
+		
+		first = System.currentTimeMillis();
+		
+		query = "SELECT author, title, price FROM books ORDER BY price;";
+		System.out.println("Query 2: " + query);
+
+				statement = con.createStatement();
+				rs = statement.executeQuery(query);
+				/* uncomment to display the result of the query */
+				/*while (rs.next()) {
+					String name = rs.getString(1);
+					String title = rs.getString(2);
+					Integer price = rs.getInt(3);
+					System.out.println("name: " + name + " | title: " + title + " | price: " + price);
+				}*/
+				
+		second = System.currentTimeMillis();
+		
+		System.out.println("Time: " + (second - first));
+		} catch(SQLException e) { }
 	}
 }
