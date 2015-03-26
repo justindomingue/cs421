@@ -101,7 +101,7 @@ public class Client {
 		System.out.println("DONE.");
 	}
 
-	public static void option2() {
+	public static void option2() throws SQLException{
 		String query = "SELECT p.pname AS publisher, p.phone_number, p.address, count(*) AS books_to_order FROM publisher as p INNER JOIN publishes as pb ON p.pid = pb.pid INNER JOIN (SELECT isbn FROM books where qty_stock = 0) as no_stock ON pb.isbn = no_stock.isbn GROUP BY p.pname, p.phone_number, p.address;";
 		System.out.println("Query: " + query);
 
@@ -119,7 +119,7 @@ public class Client {
 
 	}
 
-	public static void option3() {
+	public static void option3() throws SQLException {
 		String query = "SELECT pname FROM publisher;";
 
 		// Create statement
@@ -146,7 +146,7 @@ public class Client {
 		System.out.println("DONE.");
 	}
 
-	public static void option4() {
+	public static void option4() throws SQLException {
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("Enter the ISBN of the book to remove: ");
 		Integer isbn = scanner.nextInt();
@@ -159,7 +159,7 @@ public class Client {
 		System.out.println("DONE.");
 	}
 
-	public static void option5() {
+	public static void option5() throws SQLException {
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("Enter publisher id (larger than 10): ");
 		Integer id = scanner.nextInt();
