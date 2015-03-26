@@ -1,5 +1,6 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -10,7 +11,7 @@ public class Client {
 	public static Statement statement;
 	public static PreparedStatement prepStatement;
 
-	public static void main(String[] args)
+	public static void main(String[] args) throws SQLException
 	{
 		Boolean shouldContinue = true;
 
@@ -22,18 +23,22 @@ public class Client {
 			e.printStackTrace();
 			return;
 		}
-
+		
+		System.out.println("PostgeSQL JDBC Driver found.");
+		
 		Connection connection = null;
 
 		try {
-			connection = DriverManager.getConnection("jdbc:db2://db2:50000/cs421", "cs421g45", "joidpehejy");
+			connection = DriverManager.getConnection("jdbc:postgresql://db2:50000/cs421", "cs421g45", "joidpehejy");
 		} catch (SQLException e) {
 			System.out.println("Connection failed! Check output console.");
 			e.printStackTrace();
 		}
+		System.out.println("Connection success.");
 
 		if (connection == null) {
 			System.out.println("Something went wrong. Aborting.");
+			return;
 		}
 
 		// Set class object
@@ -85,7 +90,7 @@ public class Client {
                 System.err.print("Transaction is being rolled back");
                 con.rollback();
             } catch(SQLException excep) {
-                JDBCTutorialUtilities.printSQLException(excep);
+                System.err.print("Couldn't roll back transaction.");
             }
         }
 		} finally {
@@ -95,7 +100,7 @@ public class Client {
 			if (prepStatement != null) {
 				prepStatement.close();
 			}
-			con.setAutocommit(true);
+			con.setAutoCommit(true);
 		}
 
 		} while (shouldContinue);
@@ -163,7 +168,7 @@ public class Client {
 		con.setAutoCommit(false);
 		prepStatement = con.prepareStatement(update);
 		prepStatement.setInt(1, amount);
-		prepStatement.setString(2, name)
+		prepStatement.setString(2, name);
 		con.commit();
 
 		System.out.println("DONE.");
@@ -178,7 +183,7 @@ public class Client {
 
 		con.setAutoCommit(false);
 		prepStatement = con.prepareStatement(remove);
-		prepStatement.setString(1, isbn);
+		prepStatement.setString(1, isbn.toString());
 		con.commit();
 
 		System.out.println("DONE.");
@@ -202,7 +207,7 @@ public class Client {
 
 		prepStatement.setInt(1, id);
 		prepStatement.setString(2, name);
-		prepStatement.setInt(3, phone)
+		prepStatement.setInt(3, phone);
 		prepStatement.setString(4, address);
 		con.commit();
 
