@@ -16,19 +16,12 @@ SELECT p.pname AS publisher, p.phone_number, p.address, count(*) AS books_to_ord
 
 -- 3 Modification.
 -- Increase the price for a given publisher.
-UPDATE books as B
-SET price = B.price + ?
-WHERE B.isbn IN (SELECT P2.isbn
-	FROM publisher P
-	INNER JOIN publishes P2
-	ON P.pid = P2.pid AND P.pname = ?);
+UPDATE books as B SET price = B.price + ? WHERE B.isbn IN (SELECT P2.isbn FROM publisher P INNER JOIN publishes P2 ON P.pid = P2.pid AND P.pname = ?);
 
 -- 4 Modfication:
 -- Clenup publishers list
-DELETE FROM publisher	P
-NOT EXISTS (SELECT * FROM publishes P2
-			WHERE P.pid = P2.pid);
+DELETE FROM publisher P NOT EXISTS (SELECT * FROM publishes P2 WHERE P.pid = P2.pid);
 
--- 5 Isert
+-- 5 Insert
 -- add a new publisher
 INSERT INTO publisher VALUES(1, 'Penguin Books', '1112223333', 'A place in the USA');
