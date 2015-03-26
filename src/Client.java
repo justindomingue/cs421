@@ -7,6 +7,8 @@ import java.util.Scanner;
 
 public class Client {
 	public static Connection con;
+	public static Statement statement;
+	public static PreparedStatement prepStatement;
 
 	public static void main(String[] args)
 	{
@@ -78,8 +80,24 @@ public class Client {
 			}
 		} catch(SQLException e) {
 			System.out.println("SQL Exception.");
-			e.printStackTrace();
+			if (con != null) {
+            try {
+                System.err.print("Transaction is being rolled back");
+                con.rollback();
+            } catch(SQLException excep) {
+                JDBCTutorialUtilities.printSQLException(excep);
+            }
+        }
+		} finally {
+			if (statement != null) {
+				statement.close();
+			}
+			if (prepStatement != null) {
+				prepStatement.close();
+			}
+			con.setAutocommit(true);
 		}
+
 		} while (shouldContinue);
 
 		System.out.println("Bye.");
@@ -108,6 +126,7 @@ public class Client {
 		// Create statement
 		Statement s = con.createStatement();
 		ResultSet rs = s.executeQuery(query);
+
 		while (rs.next()) {
 			String name = rs.getString(1);
 			Integer phone = rs.getInt(2);
@@ -115,6 +134,7 @@ public class Client {
 			Integer count = rs.getInt(4);
 			System.out.println("publisher: " + name + "\tphone: " + phone + "\taddress: " + address + "\tcount: " + count);
 		}
+
 		System.out.println("DONE.");
 
 	}
@@ -138,10 +158,13 @@ public class Client {
 		System.out.print("Enter amount to increase by: ");
 		Integer amount = scanner.nextInt();
 
-		String update= "UPDATE books as B SET price = B.price + " + amount + " WHERE B.isbn IN (SELECT P2.isbn FROM publisher P INNER JOIN publishes P2 ON P.pid = P2.pid AND P.pname = " + name + ");";
+		String update= "UPDATE books as B SET price = B.price + ? WHERE B.isbn IN (SELECT P2.isbn FROM publisher P INNER JOIN publishes P2 ON P.pid = P2.pid AND P.pname = ?);";
 
-		s = con.createStatement();
-		s.executeUpdate(update);
+		con.setAutoCommit(false);
+		prepStatement = con.prepareStatement(update);
+		prepStatement.setInt(1, amount);
+		prepStatement.setString(2, name)
+		con.commit();
 
 		System.out.println("DONE.");
 	}
@@ -151,10 +174,12 @@ public class Client {
 		System.out.print("Enter the ISBN of the book to remove: ");
 		Integer isbn = scanner.nextInt();
 
-		String remove = "DELETE FROM books WHERE isbn='" + isbn + "';";
+		String remove = "DELETE FROM books WHERE isbn=?";
 
-		Statement s = con.createStatement();
-		s.executeUpdate(remove);
+		con.setAutoCommit(false);
+		prepStatement = con.prepareStatement(remove);
+		prepStatement.setString(1, isbn);
+		con.commit();
 
 		System.out.println("DONE.");
 	}
@@ -170,9 +195,16 @@ public class Client {
 		System.out.print("Enter publisher address: ");
 		String address = scanner.nextLine();
 
-		String insert = "INSERT INTO publisher VALUES(" + id + ", '" + name + "', " + phone + ", '" + address + "');";
-		Statement s = con.createStatement();
-		s.executeUpdate(insert);
+		String insert = "INSERT INTO publisher VALUES(?, ?, ?, ?);";
+
+		con.setAutoCommit(false);
+		prepStatement = con.prepareStatement(insert);
+
+		prepStatement.setInt(1, id);
+		prepStatement.setString(2, name);
+		prepStatement.setInt(3, phone)
+		prepStatement.setString(4, address);
+		con.commit();
 
 		System.out.println("DONE.");
 	}
