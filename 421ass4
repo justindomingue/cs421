@@ -1,0 +1,26 @@
+r = bnstarc
+
+## Few facts:
+
+* **Attributes in none of the FDs** => in every key : *none*
+
+* **RH side but never in LH side of an FD** => never in a key : TC
+
+* **LH side but never in RH side of an FD** => in every key : ARNS
+
+* **Both LH and RH side of an FD** => cannot say anything : B
+
+## Finding the keys
+
+* **Core** (attributes that must be in every key) : ARNS
+* **Closure of the core** (attributes determined by the core) : ARNSBCT
+
+Since all the attributes are in the closure of the core, the core is not only a key, it is also the *only key*
+
+B+ = B
+N+ = N
+S+ = S
+T+ = T
+A+ = ABT (or just A?)
+R+ = RC
+C+ = C
