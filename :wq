@@ -1,0 +1,56 @@
+# Assignment 4
+
+## Question 1
+
+### Part a
+
+#### Diagram
+
+insert!!!!
+
+#### Schema
+
+**Entities**
+
+Customer(cid, cname, billing_address, shipping_address)
+Books(isbn, title, author, price, qty_stock)
+Orders(oid, qty, order_date, ship_date, status)
+Publisher(pid, pname, phone_number, address)
+
+
+
+**Weak entities**
+
+Reviews(isbn, cid, text, rating, date)
+Discounts(amount, isbn, until)
+FeaturedBooks(isbn, until)
+
+**Relationships**
+
+Ordered(oid, cid, isbn)
+Wants(cid, isbn, since)
+RecentlyViewed(cid, isbn, date)
+Publishes(pid, isbn, year)
+
+
+## Question 2
+
+### Part a
+
+#### Few facts:
+
+* **Attributes in none of the FDs** => in every key : *none*
+
+* **RH side but never in LH side of an FD** => never in a key : TC
+
+* **LH side but never in RH side of an FD** => in every key : ARNS
+
+* **Both LH and RH side of an FD** => cannot say anything : B
+
+
+#### Finding the keys
+
+* **Core** (attributes that must be in every key) : ARNS
+* **Closure of the core** (attributes determined by the core) : ARNSBCT
+
+Since all the attributes are in the closure of the core, the core is not only a key, it is also the *only key*
